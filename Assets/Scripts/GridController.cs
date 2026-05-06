@@ -53,27 +53,37 @@ public class GridController : MonoBehaviour
     // --- Called by CellController.OnPointerEnter ---
     public void OnHoverCell(CellController hoverCell, Block block)
     {
-        // First reset everything to normal
         ClearAllHighlights();
 
         int row = hoverCell.Row;
         int col = hoverCell.Col;
 
-        // Check and highlight each tile's target cell
+        // --- First pass: check if the entire placement is valid ---
+        bool allValid = true;
         for (int i = 0; i < block.TileCount; i++)
         {
             int targetCol = col + i;
 
-            if (targetCol >= colSize || grid[row, targetCol].IsOccupied)
+            // Out of bounds OR occupied = entire block placement is invalid
+            if (targetCol >= colSize || targetCol < 0 || grid[row, targetCol].IsOccupied)
             {
-                // Mark the problem cells red
-                if (targetCol < colSize)
-                    grid[row, targetCol].SetInvalid();
+                allValid = false;
+                break;
             }
-            else
-            {
+        }
+
+        // --- Second pass: color all target cells the same (all green or all red) ---
+        for (int i = 0; i < block.TileCount; i++)
+        {
+            int targetCol = col + i;
+
+            // Only highlight cells that actually exist in the grid
+            if (targetCol < 0 || targetCol >= colSize) continue;
+
+            if (allValid)
                 grid[row, targetCol].SetHover();
-            }
+            else
+                grid[row, targetCol].SetInvalid();
         }
     }
 
