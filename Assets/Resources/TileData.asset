@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b38a6d1a99ce4ebc8631507e30b714d, type: 3}
+  m_Name: TileData
+  m_EditorClassIdentifier: Assembly-CSharp::TileDataSO
+  tileDataList:
+  - tileType: 0
+    sprite: {fileID: 6612995433030932587, guid: ac0f0ecf85ff248499b82838eef2878c, type: 3}
+  - tileType: 1
+    sprite: {fileID: -4073680223722128707, guid: 6999a2672ec354c649fd0354b9605543, type: 3}
