@@ -17,3 +17,13 @@ MonoBehaviour:
     sprite: {fileID: 6612995433030932587, guid: ac0f0ecf85ff248499b82838eef2878c, type: 3}
   - tileType: 1
     sprite: {fileID: -4073680223722128707, guid: 6999a2672ec354c649fd0354b9605543, type: 3}
+  - tileType: 2
+    sprite: {fileID: 3209268224553512848, guid: 7c15a71fbf06443919ce4860f68b2508, type: 3}
+  - tileType: 3
+    sprite: {fileID: -4104027057751615817, guid: e67fc9932e0034fbfb87f21293a6496a, type: 3}
+  - tileType: 4
+    sprite: {fileID: -892570959686545389, guid: 07fec68ab226444bb846c70457fb43fe, type: 3}
+  - tileType: 5
+    sprite: {fileID: 1792981989898011430, guid: 5aa8eda102cc541ef8acb7958d4fa177, type: 3}
+  - tileType: 6
+    sprite: {fileID: -5480107099873794879, guid: 1e6c2d285b75f4a3f8ed076cc7379ef1, type: 3}

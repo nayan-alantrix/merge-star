@@ -549,7 +549,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.19460493}
   m_AnchorMax: {x: 1, y: 0.819125}
-  m_AnchoredPosition: {x: 0, y: -13.18}
+  m_AnchoredPosition: {x: 0, y: -13.180054}
   m_SizeDelta: {x: 0, y: -79.078}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &679714605
@@ -566,6 +566,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   gridLayoutGroup: {fileID: 1946052937}
   cellPrefab: {fileID: 3984511760187238387, guid: 49c202a376ae54b1faa1602ce82e79b8, type: 3}
+  tileDataSO: {fileID: 11400000, guid: 1e2314bf5c3e9415ea2363ce768d88a0, type: 2}
 --- !u!1 &796515119
 GameObject:
   m_ObjectHideFlags: 0
