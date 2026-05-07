@@ -1,6 +1,5 @@
 using UnityEngine;
-using UnityEngine.UI;
-
+using UnityEngine.UI; 
 public class Tile : MonoBehaviour
 {
     [SerializeField] private Image image;
@@ -14,28 +13,37 @@ public class Tile : MonoBehaviour
         image.sprite = data.sprite;
     }
 
-    public void Upgrade(TileData newData)
+    public void PlayPopEffect(System.Action onComplete = null)
     {
-        SetData(newData);
+        // Scale up then destroy
+        LeanTween.cancel(gameObject);
 
-        // Optional: punch scale animation
-        StopAllCoroutines();
-        StartCoroutine(PunchScale());
+        transform.localScale = Vector3.one;
+
+        LeanTween.sequence()
+            .append(LeanTween.scale(gameObject, Vector3.one * 1.3f, 0.1f).setEase(LeanTweenType.easeOutQuad))
+            .append(LeanTween.scale(gameObject, Vector3.zero, 0.12f).setEase(LeanTweenType.easeInQuad))
+            .append(() => onComplete?.Invoke());
     }
 
-    private System.Collections.IEnumerator PunchScale()
+    public void PlaySpawnEffect()
     {
-        float t = 0f;
-        Vector3 originalScale = Vector3.one;
+        LeanTween.cancel(gameObject);
 
-        while (t < 0.15f)
-        {
-            t += Time.deltaTime;
-            float scale = 1f + Mathf.Sin(t / 0.15f * Mathf.PI) * 0.3f;
-            transform.localScale = Vector3.one * scale;
-            yield return null;
-        }
+        transform.localScale = Vector3.zero;
 
-        transform.localScale = originalScale;
+        LeanTween.scale(gameObject, Vector3.one, 0.2f)
+            .setEase(LeanTweenType.easeOutBack);
+    }
+
+    public void PlayMergeReceiveEffect()
+    {
+        LeanTween.cancel(gameObject);
+
+        transform.localScale = Vector3.one;
+
+        LeanTween.sequence()
+            .append(LeanTween.scale(gameObject, Vector3.one * 1.4f, 0.12f).setEase(LeanTweenType.easeOutQuad))
+            .append(LeanTween.scale(gameObject, Vector3.one, 0.1f).setEase(LeanTweenType.easeInQuad));
     }
 }
