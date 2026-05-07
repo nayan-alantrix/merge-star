@@ -132,4 +132,8 @@ public class CellController : MonoBehaviour,
 
         GridController.Instance.TryPlaceBlock(block, this);
     }
+    public void SetOccupyingTile(Tile tile)
+    {
+        occupyingTile = tile;
+    }
 }

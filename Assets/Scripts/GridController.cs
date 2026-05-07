@@ -9,9 +9,8 @@ public class GridController : MonoBehaviour
     [SerializeField] private GridLayoutGroup gridLayoutGroup;
     [SerializeField] private CellController cellPrefab;
     [SerializeField] private TileDataSO tileDataSO;
-
+[SerializeField] private Tile tilePrefab; // assign your Tile prefab in Inspector
     private int colSize = 5;
-
     private CellController[,] grid;
 
     void Awake()
@@ -29,8 +28,7 @@ public class GridController : MonoBehaviour
             int row = i / colSize;
             int col = i % colSize;
 
-            CellController c =
-                Instantiate(cellPrefab, gridLayoutGroup.transform);
+            CellController c = Instantiate(cellPrefab, gridLayoutGroup.transform);
 
             c.SetPosition(row, col);
 
@@ -41,45 +39,41 @@ public class GridController : MonoBehaviour
     }
 
     public bool TryPlaceBlock(Block block, CellController dropCell)
+{
+    int row = dropCell.Row;
+    int col = dropCell.Col;
+
+    if (!CanPlaceBlock(block, row, col))
     {
-        int row = dropCell.Row;
-        int col = dropCell.Col;
-
-        if (!CanPlaceBlock(block, row, col))
-        {
-            ClearAllHighlights();
-            return false;
-        }
-
-        List<CellController> placedCells = new();
-
-        for (int i = 0; i < block.TileCount; i++)
-        {
-            Tile tile = block.Tiles[i];
-
-            CellController targetCell = grid[row, col + i];
-
-            tile.transform.SetParent(null, false);
-
-            targetCell.AcceptTile(tile);
-
-            placedCells.Add(targetCell);
-        }
-
-        Destroy(block.gameObject);
-
         ClearAllHighlights();
-
-        foreach (var cell in placedCells)
-        {
-            CheckAndMerge(cell);
-        }
-
-        BlockSpawnManager.Instance.SpawnBlock();
-
-        return true;
+        return false;
     }
 
+    List<Tile> orderedTiles = block.GetOrderedTiles();
+    List<CellController> placedCells = new();
+
+    for (int i = 0; i < block.TileCount; i++)
+    {
+        int targetRow = block.IsVertical ? row + i : row;
+        int targetCol = block.IsVertical ? col : col + i;
+
+        Tile tile = orderedTiles[i];
+        CellController targetCell = grid[targetRow, targetCol];
+
+        tile.transform.SetParent(null, false);
+        targetCell.AcceptTile(tile);
+        placedCells.Add(targetCell);
+    }
+
+    Destroy(block.gameObject);
+    ClearAllHighlights();
+
+    foreach (var cell in placedCells)
+        CheckAndMerge(cell);
+
+    BlockSpawnManager.Instance.SpawnBlock();
+    return true;
+}
     // -------------------------------------------------------
     // Placement Validation
     // -------------------------------------------------------
@@ -88,12 +82,13 @@ public class GridController : MonoBehaviour
     {
         for (int i = 0; i < block.TileCount; i++)
         {
-            int targetCol = col + i;
+            int targetRow = block.IsVertical ? row + i : row;
+            int targetCol = block.IsVertical ? col : col + i;
 
-            if (targetCol >= colSize)
+            if (targetRow >= colSize || targetCol >= colSize)
                 return false;
 
-            if (grid[row, targetCol].IsOccupied)
+            if (grid[targetRow, targetCol].IsOccupied)
                 return false;
         }
 
@@ -106,98 +101,139 @@ public class GridController : MonoBehaviour
 
     private static readonly (int dr, int dc)[] Neighbours =
     {
-        (0,1),
-        (0,-1),
-        (1,0),
-        (-1,0)
+        ( 0,  1),
+        ( 0, -1),
+        ( 1,  0),
+        (-1,  0),
     };
 
     private void CheckAndMerge(CellController originCell)
 {
-    if (tileDataSO == null)
+    if (!originCell.IsOccupied) return;
+
+    TileType targetType = originCell.occupyingTile.TileType;
+
+    // Flood fill
+    List<CellController> group = new();
+    Queue<CellController> queue = new();
+    HashSet<CellController> visited = new();
+
+    queue.Enqueue(originCell);
+    visited.Add(originCell);
+
+    while (queue.Count > 0)
     {
-        Debug.LogError("TileDataSO is missing in GridController!");
+        CellController current = queue.Dequeue();
+        group.Add(current);
+
+        foreach (var (dr, dc) in Neighbours)
+        {
+            CellController neighbour = GetCell(current.Row + dr, current.Col + dc);
+
+            if (neighbour == null) continue;
+            if (visited.Contains(neighbour)) continue;
+            if (!neighbour.IsOccupied) continue;
+            if (neighbour.occupyingTile.TileType != targetType) continue;
+
+            visited.Add(neighbour);
+            queue.Enqueue(neighbour);
+        }
+    }
+
+    if (group.Count < 3) return;
+
+    // --- Boom Block: clear 3x3 around every cell in group ---
+    if (targetType == TileType.Boom_Block)
+    {
+        // First pop all bomb tiles in the group
+        foreach (CellController cell in group)
+        {
+            Destroy(cell.occupyingTile.gameObject);
+            cell.ClearTile();
+        }
+
+        // Then clear 3x3 around the last placed bomb (originCell)
+        for (int dr = -1; dr <= 1; dr++)
+        {
+            for (int dc = -1; dc <= 1; dc++)
+            {
+                CellController c = GetCell(originCell.Row + dr, originCell.Col + dc);
+                if (c != null && c.IsOccupied)
+                {
+                    Destroy(c.occupyingTile.gameObject);
+                    c.ClearTile();
+                }
+            }
+        }
+
         return;
     }
 
-    if (originCell == null)
+    // --- Normal merge: pop group, spawn upgraded tile at origin ---
+    if (!tileDataSO.TryGetNextTier(targetType, out TileData nextData))
     {
-        Debug.LogError("Origin Cell is NULL");
+        // Max tier — just pop
+        foreach (CellController cell in group)
+        {
+            Destroy(cell.occupyingTile.gameObject);
+            cell.ClearTile();
+        }
         return;
     }
 
-    if (!originCell.IsOccupied)
+    foreach (CellController cell in group)
     {
-        Debug.Log("Cell not occupied");
-        return;
+        Destroy(cell.occupyingTile.gameObject);
+        cell.ClearTile();
     }
 
-    Tile originTile = originCell.occupyingTile;
+    // Spawn upgraded tile at the origin (last placed) cell
+    Tile upgradedTile = Instantiate(tilePrefab, originCell.transform);
+    upgradedTile.SetData(nextData);
 
-    if (originTile == null)
+    RectTransform tileRT = upgradedTile.GetComponent<RectTransform>();
+    RectTransform cellRT = originCell.GetComponent<RectTransform>();
+
+    tileRT.anchorMin        = new Vector2(0.5f, 0.5f);
+    tileRT.anchorMax        = new Vector2(0.5f, 0.5f);
+    tileRT.pivot            = new Vector2(0.5f, 0.5f);
+    tileRT.anchoredPosition = Vector2.zero;
+    tileRT.sizeDelta        = cellRT.sizeDelta;
+
+    originCell.SetOccupyingTile(upgradedTile);
+
+    // Chain reaction
+    CheckAndMerge(originCell);
+}
+
+private CellController GetCenterCell(List<CellController> group)
+{
+    // Average row/col of the group, pick the cell closest to that average
+    float avgRow = 0, avgCol = 0;
+
+    foreach (var cell in group)
     {
-        Debug.LogError("Origin Tile is NULL");
-        return;
+        avgRow += cell.Row;
+        avgCol += cell.Col;
     }
 
-    if (originTile.Data == null)
+    avgRow /= group.Count;
+    avgCol /= group.Count;
+
+    CellController closest = group[0];
+    float bestDist = float.MaxValue;
+
+    foreach (var cell in group)
     {
-        Debug.LogError("Origin Tile Data is NULL");
-        return;
+        float dist = Mathf.Abs(cell.Row - avgRow) + Mathf.Abs(cell.Col - avgCol);
+        if (dist < bestDist)
+        {
+            bestDist = dist;
+            closest  = cell;
+        }
     }
 
-    TileType currentType = originTile.TileType;
-
-    // Boom block doesn't merge
-    if (currentType == TileType.Boom_Block)
-        return;
-
-    // Try getting next tier
-    if (!tileDataSO.TryGetNextTier(currentType, out TileData nextData))
-    {
-        Debug.Log("No next tier exists");
-        return;
-    }
-
-    if (nextData == null)
-    {
-        Debug.LogError("NextData is NULL");
-        return;
-    }
-
-    foreach (var (dr, dc) in Neighbours)
-    {
-        int nr = originCell.Row + dr;
-        int nc = originCell.Col + dc;
-
-        CellController neighbourCell = GetCell(nr, nc);
-
-        if (neighbourCell == null)
-            continue;
-
-        if (!neighbourCell.IsOccupied)
-            continue;
-
-        Tile neighbourTile = neighbourCell.occupyingTile;
-
-        if (neighbourTile == null)
-            continue;
-
-        if (neighbourTile.TileType != currentType)
-            continue;
-
-        // MERGE
-
-        originTile.Upgrade(nextData);
-
-        neighbourCell.ClearTile();
-
-        Destroy(neighbourTile.gameObject);
-
-        CheckAndMerge(originCell);
-
-        return;
-    }
+    return closest;
 }
 
     // -------------------------------------------------------
@@ -212,12 +248,8 @@ public class GridController : MonoBehaviour
     public void ClearAllHighlights()
     {
         for (int r = 0; r < colSize; r++)
-        {
             for (int c = 0; c < colSize; c++)
-            {
                 grid[r, c].SetNormal();
-            }
-        }
     }
 
     public void OnHoverCell(CellController hoverCell, Block block)
@@ -231,15 +263,16 @@ public class GridController : MonoBehaviour
 
         for (int i = 0; i < block.TileCount; i++)
         {
-            int targetCol = col + i;
+            int targetRow = block.IsVertical ? row + i : row;
+            int targetCol = block.IsVertical ? col : col + i;
 
-            if (targetCol < 0 || targetCol >= colSize)
-                continue;
+            if (targetRow < 0 || targetRow >= colSize) continue;
+            if (targetCol < 0 || targetCol >= colSize) continue;
 
             if (allValid)
-                grid[row, targetCol].SetHover();
+                grid[targetRow, targetCol].SetHover();
             else
-                grid[row, targetCol].SetInvalid();
+                grid[targetRow, targetCol].SetInvalid();
         }
     }
 
@@ -250,9 +283,7 @@ public class GridController : MonoBehaviour
 
     public CellController GetCell(int row, int col)
     {
-        if (row < 0 || row >= colSize ||
-            col < 0 || col >= colSize)
-            return null;
+        if (row < 0 || row >= colSize || col < 0 || col >= colSize) return null;
 
         return grid[row, col];
     }
