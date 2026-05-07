@@ -25,7 +25,7 @@ public class CellController : MonoBehaviour,
 
     // Colors
     private static readonly Color normalColor =
-        new Color(0.8f, 0.8f, 0.8f, 1f);
+        new Color(0.29f, 0.294f, 0.54f, 1f);
 
     private static readonly Color validColor =
         new Color(0.4f, 0.9f, 0.4f, 0.5f);

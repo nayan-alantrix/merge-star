@@ -326,4 +326,20 @@ public class GridController : MonoBehaviour
         if (row < 0 || row >= colSize || col < 0 || col >= colSize) return null;
         return grid[row, col];
     }
+
+    //game over'
+
+    // Call this after every placement
+    public bool HasAnyValidPlacement(Block block)
+    {
+        for (int r = 0; r < colSize; r++)
+        {
+            for (int c = 0; c < colSize; c++)
+            {
+                if (CanPlaceBlock(block, r, c))
+                    return true;
+            }
+        }
+        return false;
+    }
 }
