@@ -25,6 +25,8 @@ public class GameManager : MonoBehaviour
     {
         if (IsGameOver) return;
 
+        AudioService.Instance.PlaySFX(AudioType.GameOver);
+
         IsGameOver = true;
         PlayerPrefs.Save();
         gameOverPanel.SetActive(true);

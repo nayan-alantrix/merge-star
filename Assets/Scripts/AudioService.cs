@@ -119,4 +119,5 @@ public enum AudioType
     TileMerge,
     TilePlace,
     TileUpgrade,
+    BlockRotate
 }

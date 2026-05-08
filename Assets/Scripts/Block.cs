@@ -68,6 +68,8 @@ public class Block : MonoBehaviour, IPointerClickHandler
                 SetTileOrder(0, 1);
                 break;
         }
+
+    AudioService.Instance.PlaySFX(AudioType.BlockRotate);
     }
 
     private void SetLayout(bool horizontal)

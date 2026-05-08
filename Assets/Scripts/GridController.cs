@@ -86,6 +86,8 @@ public class GridController : MonoBehaviour
             placedCells.Add(targetCell);
         }
 
+        AudioService.Instance.PlaySFX(AudioType.TilePlace);
+
         Destroy(block.gameObject);
         ClearAllHighlights();
 
@@ -178,6 +180,8 @@ public class GridController : MonoBehaviour
         // --- Bomb merge ---
         if (targetType == TileType.Boom_Block)
         {
+
+            AudioService.Instance.PlaySFX(AudioType.TilePlace);
             yield return StartCoroutine(PopGroup(group));
 
             // 3x3 blast around last placed bomb (originCell)
@@ -195,6 +199,7 @@ public class GridController : MonoBehaviour
 
             yield return StartCoroutine(PopGroup(blastCells));
 
+            AudioService.Instance.PlaySFX(AudioType.BombMerge);
             ScoreManager.Instance.AddBombScore(group.Count + blastCells.Count);
 
             yield break;
@@ -232,6 +237,8 @@ public class GridController : MonoBehaviour
         originCell.SetOccupyingTile(upgradedTile);
 
         // Merge receive animation
+
+        AudioService.Instance.PlaySFX(AudioType.TileMerge);
         upgradedTile.PlayMergeReceiveEffect();
 
         // Wait for spawn animation to finish
