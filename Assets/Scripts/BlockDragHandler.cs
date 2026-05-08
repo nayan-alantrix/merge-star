@@ -19,14 +19,15 @@ public class BlockDragHandler : MonoBehaviour,
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        originalParent   = transform.parent;
+        originalParent = transform.parent;
         originalPosition = rectTransform.anchoredPosition;
 
         transform.SetParent(canvas.transform, true);
-        canvasGroup.alpha          = 0.85f;
+        transform.SetAsLastSibling();
+
+        canvasGroup.alpha = 0.85f;
         canvasGroup.blocksRaycasts = false;
 
-        // Show valid drop zones
         GridController.Instance.HighlightValidCells(GetComponent<Block>());
     }
 

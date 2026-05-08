@@ -14,6 +14,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TileDataSO
   tileDataList:
   - tileType: 0
-    sprite: {fileID: 6612995433030932587, guid: ac0f0ecf85ff248499b82838eef2878c, type: 3}
+    sprite: {fileID: -8623132681241381022, guid: 43b9d6c67b8dd4fa59757f79fba97a55, type: 3}
   - tileType: 1
-    sprite: {fileID: -4073680223722128707, guid: 6999a2672ec354c649fd0354b9605543, type: 3}
+    sprite: {fileID: 3848518110646621553, guid: 5e4f4bda696e340da911ed94e6874325, type: 3}
+  - tileType: 2
+    sprite: {fileID: -486777534330898763, guid: e50a02e662e974e5cb4ff5a391c399ce, type: 3}
+  - tileType: 3
+    sprite: {fileID: 8187310178534476439, guid: 53120bc95a2bd42f6b4f6669443cba60, type: 3}
+  - tileType: 4
+    sprite: {fileID: -5657366560688935582, guid: 141bb94e03b4d40efae39bc1d78c5ac0, type: 3}
+  - tileType: 5
+    sprite: {fileID: -1788254084901262932, guid: d521223bd9e76421b954b7cf19aa34be, type: 3}
+  - tileType: 6
+    sprite: {fileID: 6242876725218054352, guid: ed8144e02db4649c1881584bfad8ee54, type: 3}
